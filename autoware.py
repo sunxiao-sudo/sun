@@ -1,50 +1,60 @@
 import subprocess
 import threading
-import atexit
+import time
+from threading import Lock
 
 class Handle(object):
     def __init__(self) -> None:
         self.autoware_process = None  # 用于存储 Autoware 进程的引用
-        # 注册退出时的处理函数，确保退出时停止 Autoware 进程
-        atexit.register(self.stop_autoware)
+        self.lock = Lock()  # 线程锁，用于保证对 `autoware_process` 的线程安全访问
 
     def start_autoware(self):
-        # 启动 Autoware，确保没有已有进程在运行
-        if self.autoware_process and self.autoware_process.poll() is None:
-            print("Autoware is already running.")
-            return
-        # 启动 Autoware 进程
-        self.autoware_process = subprocess.Popen(['/home/nvidia/code/kunyi/quick_start3.sh'],
-                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        print("Autoware started...")
+        """启动 Autoware 进程，避免阻塞主线程"""
+        with self.lock:
+            if self.autoware_process is not None:
+                print("Autoware 已经在运行中。")
+                return
+            print("启动 Autoware...")
+            # 启动 Autoware 的脚本
+            self.autoware_process = subprocess.Popen(['/home/nvidia/code/kunyi/quick_start3.sh'],
+                                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            # 输出启动信息（不阻塞）
+            print("Autoware 启动中，请稍候...")
 
     def stop_autoware(self):
-        if self.autoware_process:
-            print("Stopping Autoware...")
-            self.autoware_process.terminate()  # 优雅停止进程
-            self.autoware_process.wait()  # 等待进程退出
-            print("Autoware stopped.")
-        else:
-            print("No Autoware process is running.")
+        """优雅停止 Autoware 进程"""
+        with self.lock:
+            if self.autoware_process is not None:
+                print("正在停止 Autoware...")
+                self.autoware_process.terminate()  # 尝试终止 Autoware 进程
+                self.autoware_process.wait()  # 等待进程终止
+                print("Autoware 已停止。")
+                self.autoware_process = None
+            else:
+                print("没有运行的 Autoware 进程可以停止。")
 
-    def start_autoware_in_thread(self):
-        # 创建并启动一个新线程来运行 start_autoware
-        threading.Thread(target=self.start_autoware).start()
+    def run(self):
+        """主程序循环，接收用户输入"""
+        while True:
+            print("\n请输入命令:")
+            print("1. startautoware - 启动 Autoware")
+            print("2. stopautoware - 停止 Autoware")
+            print("3. exit - 退出程序")
+            
+            cmd = input("请输入命令：").strip()
+
+            if cmd == "startautoware":
+                # 启动线程来启动 Autoware
+                threading.Thread(target=self.start_autoware, daemon=True).start()
+            elif cmd == "stopautoware":
+                self.stop_autoware()
+            elif cmd == "exit":
+                print("程序退出...")
+                self.stop_autoware()  # 确保退出前停止 Autoware 进程
+                break
+            else:
+                print("无效的命令，请重新输入。")
 
 if __name__ == "__main__":
     handle = Handle()
-
-    try:
-        # 用户可以选择启动或停止 Autoware
-        action = input("Enter 'start' to start Autoware or 'stop' to stop Autoware: ").strip().lower()
-
-        if action == 'start':
-            # 启动 Autoware 进程到一个新线程
-            handle.start_autoware_in_thread()
-        elif action == 'stop':
-            handle.stop_autoware()
-        else:
-            print("Invalid input. Please enter 'start' or 'stop'.")
-    finally:
-        # 程序退出时，确保调用 stop_autoware 来停止 Autoware 进程
-        print("Program is exiting...")
+    handle.run()
