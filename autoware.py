@@ -22,16 +22,17 @@ class Handle(object):
             print("Autoware 启动中，请稍候...")
 
     def stop_autoware(self):
-        """优雅停止 Autoware 进程"""
+        """通过执行 stop.sh 脚本来停止 Autoware 进程"""
         with self.lock:
-            if self.autoware_process is not None:
-                print("正在停止 Autoware...")
-                self.autoware_process.terminate()  # 尝试终止 Autoware 进程
-                self.autoware_process.wait()  # 等待进程终止
+            print("正在停止 Autoware...")
+            # 执行 stop.sh 脚本来停止 Autoware
+            stop_process = subprocess.Popen(['/home/nvidia/code/kunyi/stop.sh'],
+                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            stdout, stderr = stop_process.communicate()
+            if stop_process.returncode == 0:
                 print("Autoware 已停止。")
-                self.autoware_process = None
             else:
-                print("没有运行的 Autoware 进程可以停止。")
+                print(f"停止 Autoware 时出错: {stderr.decode()}")
 
     def run(self):
         """主程序循环，接收用户输入"""
