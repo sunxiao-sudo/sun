@@ -2,7 +2,6 @@ import sys
 import os
 import yaml
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QVBoxLayout, QPushButton, QWidget
-from PyQt5.QtCore import QCoreApplication, Qt
 from VehicleMode import Ui_VehicleModeWindow  # 子界面的UI类名
 from autoware import Ui_autowareWindow  # 主界面的UI类名
 
@@ -16,6 +15,9 @@ class VehicleModeWindow(QMainWindow, Ui_VehicleModeWindow):
         self.yaml_data = yaml_data
         self.yaml_file = yaml_file
 
+        # 打印检查yaml_data
+        print(f"Loaded YAML Data in VehicleModeWindow: {self.yaml_data}")
+
         # 映射YAML数据到QTextEdit控件
         self.map_yaml_to_controls()
 
@@ -27,8 +29,8 @@ class VehicleModeWindow(QMainWindow, Ui_VehicleModeWindow):
 
     def map_yaml_to_controls(self):
         """将YAML文件中的参数映射到控件中"""
-        print("Loaded YAML Data:", self.yaml_data)  # 打印yaml_data
-        
+        print("Mapping YAML data to controls...")  # 打印映射过程
+
         # 映射 YAML 数据到对应的 QTextEdit 控件
         self.textEdit_01.setText(str(self.yaml_data.get('wheel_radius', '')))
         self.textEdit_02.setText(str(self.yaml_data.get('wheel_width', '')))
@@ -62,6 +64,8 @@ class VehicleModeWindow(QMainWindow, Ui_VehicleModeWindow):
         self.textEdit_30.setText(str(self.yaml_data.get('left_overhang', '')))
         self.textEdit_31.setText(str(self.yaml_data.get('right_overhang', '')))
         self.textEdit_32.setText(str(self.yaml_data.get('max_steer_angle', '')))
+
+        print("YAML data mapping completed.")  # 显示映射完成
 
     def save_to_yaml(self):
         """保存修改后的值回YAML文件"""
@@ -150,18 +154,16 @@ class AutowareWindow(QMainWindow, Ui_autowareWindow):
         """打开子界面，并将相应的YAML数据传递给子界面"""
         first_yaml_file = list(self.yaml_files.keys())[0]  # 默认打开第一个YAML文件
         yaml_data = self.yaml_files[first_yaml_file]
-        
+
+        # 打印加载的YAML数据，以确认其内容
+        print(f"Loaded YAML Data in AutowareWindow: {yaml_data}")
+
         # 打开子界面并传入YAML数据
         self.vehicle_mode_window = VehicleModeWindow(yaml_data, first_yaml_file)  # 传递文件路径
         self.vehicle_mode_window.show()  # 使用show()来显示主窗口
 
 
 if __name__ == '__main__':
-    # 禁用 QFileSystemWatcher
-    from PyQt5.QtCore import QCoreApplication
-    QCoreApplication.setAttribute(Qt.AA_DisableFileSystemWatcher, True)
-
     app = QApplication(sys.argv)
     autoware_window = AutowareWindow()
-    autoware_window.show()
-    sys.exit(app.exec_())
+    autoware_window.show
