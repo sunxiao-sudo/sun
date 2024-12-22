@@ -2,6 +2,7 @@ import sys
 import os
 import yaml
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QVBoxLayout, QPushButton, QWidget
+from PyQt5.QtCore import QCoreApplication, Qt
 from VehicleMode import Ui_VehicleModeWindow  # 子界面的UI类名
 from autoware import Ui_autowareWindow  # 主界面的UI类名
 
@@ -156,7 +157,11 @@ class AutowareWindow(QMainWindow, Ui_autowareWindow):
 
 
 if __name__ == '__main__':
+    # 禁用 QFileSystemWatcher
+    from PyQt5.QtCore import QCoreApplication
+    QCoreApplication.setAttribute(Qt.AA_DisableFileSystemWatcher, True)
+
     app = QApplication(sys.argv)
     autoware_window = AutowareWindow()
     autoware_window.show()
-    sys.exit
+    sys.exit(app.exec_())
