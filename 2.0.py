@@ -35,11 +35,13 @@ class VehicleModeWindow(QMainWindow):
         self.yaml_data_2 = self.load_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/simulator_model.param.yaml')
         self.yaml_data_3 = self.load_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/vehicle_info.param.yaml')
 
+        # 初始化textEdits列表
+        self.textEdits = []
+
         # 填充QTextEdit控件的初始文本
         self.fill_text_edits()
 
         # 连接QTextEdit控件文本改变信号
-        self.textEdits = []
         for i in range(1, 33):
             text_edit = self.findChild(QTextEdit, f'textEdit_{i}')
             self.textEdits.append(text_edit)
