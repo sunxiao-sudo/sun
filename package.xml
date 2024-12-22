@@ -1,18 +1,15 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>goal_publisher</name>
-  <version>0.0.0</version>
-  <description>A ROS 2 package to publish goals and engage scripts</description>
-  <maintainer email="your_email@example.com">your_name</maintainer>
-  <license>your_license</license>
+  <version>0.0.1</version>
+  <description>Goal publisher node for mission planning</description>
+  <maintainer email="your.email@example.com">Your Name</maintainer>
+  <license>Your License</license>
 
-  <dependencies>
-    <depend>rclpy</depend>
-    <depend>geometry_msgs</depend>
-  </dependencies>
+  <depend>rclpy</depend>
+  <depend>geometry_msgs</depend>
 
-  <buildtool_depend>ament_python</buildtool_depend>
-  <exec_depend>rclpy</exec_depend>
-  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>python3</exec_depend>
 
+  <test_depend>pytest</test_depend>
 </package>
