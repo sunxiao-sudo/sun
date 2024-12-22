@@ -19,40 +19,81 @@ class VehicleModeWindow(QMainWindow, Ui_VehicleModeWindow):
         self.map_yaml_to_controls()
 
         # 连接每个QTextEdit控件的textChanged信号，自动保存
-        self.textedit01.textChanged.connect(self.save_to_yaml)
-        self.textedit02.textChanged.connect(self.save_to_yaml)
-        self.textedit03.textChanged.connect(self.save_to_yaml)
-        self.textedit04.textChanged.connect(self.save_to_yaml)
-        self.textedit05.textChanged.connect(self.save_to_yaml)
-        self.textedit06.textChanged.connect(self.save_to_yaml)
-        self.textedit07.textChanged.connect(self.save_to_yaml)
+        for i in range(1, 33):
+            text_edit = getattr(self, f'textEdit_{i:02d}', None)
+            if text_edit:
+                text_edit.textChanged.connect(self.save_to_yaml)
 
     def map_yaml_to_controls(self):
         """将YAML文件中的参数映射到控件中"""
-        self.textedit01.setText(str(self.yaml_data.get('wheel_radius', '')))
-        self.textedit02.setText(str(self.yaml_data.get('wheel_width', '')))
-        self.textedit03.setText(str(self.yaml_data.get('wheel_base', '')))
-        self.textedit04.setText(str(self.yaml_data.get('front_overhang', '')))
-        self.textedit05.setText(str(self.yaml_data.get('rear_overhang', '')))
-        self.textedit06.setText(str(self.yaml_data.get('left_overhang', '')))
-        self.textedit07.setText(str(self.yaml_data.get('right_overhang', '')))
+        print("Loaded YAML Data:", self.yaml_data)  # 打印yaml_data
+        
+        # 映射 YAML 数据到对应的 QTextEdit 控件
+        self.textEdit_01.setText(str(self.yaml_data.get('wheel_radius', '')))
+        self.textEdit_02.setText(str(self.yaml_data.get('wheel_width', '')))
+        self.textEdit_03.setText(str(self.yaml_data.get('wheel_base', '')))
+        self.textEdit_04.setText(str(self.yaml_data.get('front_overhang', '')))
+        self.textEdit_05.setText(str(self.yaml_data.get('rear_overhang', '')))
+        self.textEdit_06.setText(str(self.yaml_data.get('left_overhang', '')))
+        self.textEdit_07.setText(str(self.yaml_data.get('simulated_frame_id', '')))
+        self.textEdit_08.setText(str(self.yaml_data.get('origin_frame_id', '')))
+        self.textEdit_09.setText(str(self.yaml_data.get('vehicle_model_type', '')))
+        self.textEdit_10.setText(str(self.yaml_data.get('initialize_source', '')))
+        self.textEdit_11.setText(str(self.yaml_data.get('timer_sampling_time_ms', '')))
+        self.textEdit_12.setText(str(self.yaml_data.get('add_measurement_noise', '')))
+        self.textEdit_13.setText(str(self.yaml_data.get('vel_lim', '')))
+        self.textEdit_14.setText(str(self.yaml_data.get('vel_rate_lim', '')))
+        self.textEdit_15.setText(str(self.yaml_data.get('steer_lim', '')))
+        self.textEdit_16.setText(str(self.yaml_data.get('steer_rate_lim', '')))
+        self.textEdit_17.setText(str(self.yaml_data.get('acc_time_delay', '')))
+        self.textEdit_18.setText(str(self.yaml_data.get('acc_time_constant', '')))
+        self.textEdit_19.setText(str(self.yaml_data.get('steer_time_delay', '')))
+        self.textEdit_20.setText(str(self.yaml_data.get('steer_time_constant', '')))
+        self.textEdit_21.setText(str(self.yaml_data.get('x_stddev', '')))
+        self.textEdit_22.setText(str(self.yaml_data.get('y_stddev', '')))
+        self.textEdit_23.setText(str(self.yaml_data.get('wheel_radius', '')))
+        self.textEdit_24.setText(str(self.yaml_data.get('wheel_width', '')))
+        self.textEdit_25.setText(str(self.yaml_data.get('wheel_base', '')))
+        self.textEdit_26.setText(str(self.yaml_data.get('wheel_tread', '')))
+        self.textEdit_27.setText(str(self.yaml_data.get('front_overhang', '')))
+        self.textEdit_28.setText(str(self.yaml_data.get('vehicle_height', '')))
+        self.textEdit_29.setText(str(self.yaml_data.get('rear_overhang', '')))
+        self.textEdit_30.setText(str(self.yaml_data.get('left_overhang', '')))
+        self.textEdit_31.setText(str(self.yaml_data.get('right_overhang', '')))
+        self.textEdit_32.setText(str(self.yaml_data.get('max_steer_angle', '')))
 
     def save_to_yaml(self):
         """保存修改后的值回YAML文件"""
         try:
-            self.yaml_data['wheel_radius'] = self.parse_float(self.textedit01.toPlainText())
-            self.yaml_data['wheel_width'] = self.parse_float(self.textedit02.toPlainText())
-            self.yaml_data['wheel_base'] = self.parse_float(self.textedit03.toPlainText())
-            self.yaml_data['front_overhang'] = self.parse_float(self.textedit04.toPlainText())
-            self.yaml_data['rear_overhang'] = self.parse_float(self.textedit05.toPlainText())
-            self.yaml_data['left_overhang'] = self.parse_float(self.textedit06.toPlainText())
-            self.yaml_data['right_overhang'] = self.parse_float(self.textedit07.toPlainText())
+            updated_data = {}  # 用来存储所有修改过的键值对
 
-            # 保存 YAML 文件
-            with open(self.yaml_file, 'w') as file:
-                yaml.dump(self.yaml_data, file)
+            # 只更新修改过的参数
+            for i in range(1, 33):
+                text_edit = getattr(self, f'textEdit_{i:02d}', None)
+                if text_edit:
+                    key = self.get_yaml_key_for_text_edit(i)
+                    new_value = self.parse_float(text_edit.toPlainText())
 
-            print("YAML file saved successfully.")
+                    # 如果值发生变化，更新yaml_data中的相应键
+                    if self.yaml_data.get(key) != new_value:
+                        updated_data[key] = new_value
+
+            # 如果有修改，更新YAML文件
+            if updated_data:
+                with open(self.yaml_file, 'r') as file:
+                    original_data = yaml.safe_load(file) or {}
+
+                # 更新修改过的参数
+                original_data.update(updated_data)
+
+                # 保存回原始文件
+                with open(self.yaml_file, 'w') as file:
+                    yaml.dump(original_data, file)
+
+                print(f"YAML file {self.yaml_file} updated successfully.")
+            else:
+                print("No changes detected, skipping save.")
+
         except Exception as e:
             print(f"Error saving YAML file: {e}")
 
@@ -63,6 +104,23 @@ class VehicleModeWindow(QMainWindow, Ui_VehicleModeWindow):
         except ValueError:
             return 0.0
 
+    def get_yaml_key_for_text_edit(self, index):
+        """返回与每个textEdit控件对应的YAML参数名称"""
+        key_map = {
+            1: 'wheel_radius', 2: 'wheel_width', 3: 'wheel_base',
+            4: 'front_overhang', 5: 'rear_overhang', 6: 'left_overhang',
+            7: 'simulated_frame_id', 8: 'origin_frame_id', 9: 'vehicle_model_type',
+            10: 'initialize_source', 11: 'timer_sampling_time_ms', 12: 'add_measurement_noise',
+            13: 'vel_lim', 14: 'vel_rate_lim', 15: 'steer_lim',
+            16: 'steer_rate_lim', 17: 'acc_time_delay', 18: 'acc_time_constant',
+            19: 'steer_time_delay', 20: 'steer_time_constant', 21: 'x_stddev',
+            22: 'y_stddev', 23: 'wheel_radius', 24: 'wheel_width',
+            25: 'wheel_base', 26: 'wheel_tread', 27: 'front_overhang',
+            28: 'vehicle_height', 29: 'rear_overhang', 30: 'left_overhang',
+            31: 'right_overhang', 32: 'max_steer_angle'
+        }
+        return key_map.get(index)
+
 
 class AutowareWindow(QMainWindow, Ui_autowareWindow):
     def __init__(self):
@@ -70,11 +128,11 @@ class AutowareWindow(QMainWindow, Ui_autowareWindow):
         self.setupUi(self)
 
         # 修改为指定的目录路径
-        self.yaml_directory = '/home/username/yaml_files/'  # 这里需要指定YAML文件所在的目录
+        self.yaml_directory = '/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config'  # 这里需要指定YAML文件所在的目录
         self.yaml_files = self.load_yaml_files(self.yaml_directory)
 
         # 点击按钮打开子界面
-        self.pushButton.clicked.connect(self.open_vehicle_mode_window)
+        self.pushButton_7.clicked.connect(self.open_vehicle_mode_window)
 
     def load_yaml_files(self, directory):
         """加载目录下的所有YAML文件"""
@@ -93,7 +151,7 @@ class AutowareWindow(QMainWindow, Ui_autowareWindow):
         yaml_data = self.yaml_files[first_yaml_file]
         
         # 打开子界面并传入YAML数据
-        self.vehicle_mode_window = VehicleModeWindow(yaml_data, first_yaml_file)
+        self.vehicle_mode_window = VehicleModeWindow(yaml_data, first_yaml_file)  # 传递文件路径
         self.vehicle_mode_window.show()  # 使用show()来显示主窗口
 
 
@@ -101,4 +159,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     autoware_window = AutowareWindow()
     autoware_window.show()
-    sys.exit(app.exec_())
+    sys.exit
