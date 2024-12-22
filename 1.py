@@ -63,8 +63,24 @@ class GoalPublisherAndEngage(Node):
             self.get_logger().info(f"Engage script executed successfully: {result.stdout}")
         except subprocess.CalledProcessError as e:
             self.get_logger().error(f"Error executing engage script: {e.stderr}")
+        except Exception as e:
+            self.get_logger().error(f"Unexpected error: {str(e)}")
+
+def call_autoware_script():
+    # 调用 quick_start1.sh 脚本
+    script_path = '/home/nvidia/code/kunyi/quick_start1.sh'
+    try:
+        result = subprocess.run([script_path], check=True, text=True, capture_output=True)
+        print(f"Autoware script executed successfully: {result.stdout}")
+    except subprocess.CalledProcessError as e:
+        print(f"Error executing Autoware script: {e.stderr}")
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
 
 def main():
+    # 先执行 quick_start1.sh 脚本
+    call_autoware_script()
+
     # 初始化ROS 2
     rclpy.init()
 
@@ -77,7 +93,6 @@ def main():
 
     # 启动ROS节点
     try:
-        # 启动ROS节点
         executor.spin()
     except KeyboardInterrupt:
         pass
