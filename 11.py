@@ -48,13 +48,14 @@ class VehicleModeWindow(QMainWindow):
         """加载YAML文件"""
         try:
             with open(file_path, 'r') as file:
-                return yaml.safe_load(file)
+                return yaml.safe_load(file) or {}
         except Exception as e:
             print(f"Error loading YAML file {file_path}: {e}")
             return {}
 
     def fill_text_edits(self):
         """填充QTextEdit控件"""
+        # 合并3个yaml的数据
         yaml_data = {
             **self.yaml_data_1, 
             **self.yaml_data_2, 
@@ -75,6 +76,7 @@ class VehicleModeWindow(QMainWindow):
             ('max_steer_angle', 31)
         ]
 
+        # 填充QTextEdit控件
         for key, idx in mapping:
             value = str(yaml_data.get(key, ''))
             # 确保 textEdits 已经初始化
@@ -112,6 +114,7 @@ class VehicleModeWindow(QMainWindow):
             ('max_steer_angle', 31)
         ]
 
+        # 确保索引在范围内
         for key, idx in mapping:
             if sender == self.textEdits[idx]:
                 # 更新对应的yaml文件中的值
@@ -129,9 +132,10 @@ class VehicleModeWindow(QMainWindow):
         """保存YAML文件"""
         try:
             with open(file_path, 'w') as file:
-                yaml.safe_dump(data, file)
+                yaml.safe_dump(data, file, default_flow_style=False)  # 确保格式正确
         except Exception as e:
             print(f"Error saving YAML file {file_path}: {e}")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
