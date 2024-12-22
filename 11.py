@@ -64,13 +64,14 @@ class VehicleModeWindow(QMainWindow):
         """填充 QTextEdit 控件"""
         # 合并3个 YAML 文件的数据
         yaml_data = {
-            **self.yaml_data_1, 
-            **self.yaml_data_2, 
-            **self.yaml_data_3
+            **self.yaml_data_1.get('/**', {}).get('ros__parameters', {}),
+            **self.yaml_data_2.get('/**', {}).get('ros__parameters', {}),
+            **self.yaml_data_3.get('/**', {}).get('ros__parameters', {})
         }
 
         print(f"Combined YAML data: {yaml_data}")
 
+        # 控件和 YAML 键值的映射关系
         mapping = [
             ('wheel_radius', 0), ('wheel_width', 1), ('wheel_base', 2),
             ('front_overhang', 3), ('rear_overhang', 4), ('left_overhang', 5),
