@@ -1,9 +1,18 @@
-<package format="3">
+<?xml version="1.0"?>
+<package format="2">
   <name>goal_publisher</name>
-  <version>0.0.1</version>
-  <description>The goal_publisher package</description>
-  <maintainer email="youremail@example.com">Your Name</maintainer>
-  <license>Apache-2.0</license>
-  <depend>rclpy</depend>
-  <depend>geometry_msgs</depend>
+  <version>0.0.0</version>
+  <description>A ROS 2 package to publish goals and engage scripts</description>
+  <maintainer email="your_email@example.com">your_name</maintainer>
+  <license>your_license</license>
+
+  <dependencies>
+    <depend>rclpy</depend>
+    <depend>geometry_msgs</depend>
+  </dependencies>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+
 </package>
