@@ -18,6 +18,7 @@ class MainWindow(QMainWindow):
 
     def open_vehicle_mode_window(self):
         """打开子界面"""
+        print("Opening Vehicle Mode window...")
         self.vehicle_mode_window = VehicleModeWindow()
         self.vehicle_mode_window.show()
 
@@ -27,40 +28,48 @@ class VehicleModeWindow(QMainWindow):
         super().__init__()
 
         # 初始化子界面
+        print("Initializing Vehicle Mode window...")
         self.ui = Ui_VehicleModeWindow()
         self.ui.setupUi(self)
 
         # 加载YAML文件数据
+        print("Loading YAML data...")
         self.yaml_data_1 = self.load_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/mirror.param.yaml')
         self.yaml_data_2 = self.load_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/simulator_model.param.yaml')
         self.yaml_data_3 = self.load_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/vehicle_info.param.yaml')
 
-        # 初始化textEdits列表
+        # 初始化 textEdits 列表
         self.textEdits = []
 
-        # 填充QTextEdit控件的初始文本
+        # 填充 QTextEdit 控件的初始文本
+        print("Filling QTextEdit controls with YAML data...")
         self.fill_text_edits()
 
-        # 连接QTextEdit控件文本改变信号
+        # 连接 QTextEdit 控件文本改变信号
         self.connect_text_edits()
 
     def load_yaml(self, file_path):
-        """加载YAML文件"""
+        """加载 YAML 文件"""
+        print(f"Loading YAML file: {file_path}")
         try:
             with open(file_path, 'r') as file:
-                return yaml.safe_load(file) or {}
+                data = yaml.safe_load(file) or {}
+                print(f"Data loaded from {file_path}: {data}")
+                return data
         except Exception as e:
             print(f"Error loading YAML file {file_path}: {e}")
             return {}
 
     def fill_text_edits(self):
-        """填充QTextEdit控件"""
-        # 合并3个yaml的数据
+        """填充 QTextEdit 控件"""
+        # 合并3个 YAML 文件的数据
         yaml_data = {
             **self.yaml_data_1, 
             **self.yaml_data_2, 
             **self.yaml_data_3
         }
+
+        print(f"Combined YAML data: {yaml_data}")
 
         mapping = [
             ('wheel_radius', 0), ('wheel_width', 1), ('wheel_base', 2),
@@ -76,7 +85,7 @@ class VehicleModeWindow(QMainWindow):
             ('max_steer_angle', 31)
         ]
 
-        # 填充QTextEdit控件
+        # 填充数据到 QTextEdit 控件
         for key, idx in mapping:
             value = str(yaml_data.get(key, ''))
             # 确保 textEdits 已经初始化
@@ -86,6 +95,7 @@ class VehicleModeWindow(QMainWindow):
                     self.textEdits.append(text_edit)
             # 更新 QTextEdit 控件的文本
             if idx < len(self.textEdits):
+                print(f"Setting text for {key} (textEdit_{idx + 1}) to: {value}")
                 self.textEdits[idx].setText(value)
 
     def connect_text_edits(self):
@@ -93,10 +103,11 @@ class VehicleModeWindow(QMainWindow):
         for i in range(32):
             text_edit = self.textEdits[i] if i < len(self.textEdits) else None
             if text_edit:
+                print(f"Connecting textChanged signal for textEdit_{i + 1}")
                 text_edit.textChanged.connect(self.on_text_changed)
 
     def on_text_changed(self):
-        """当文本修改时，更新对应的YAML文件中的值"""
+        """当文本修改时，更新对应的 YAML 文件中的值"""
         sender = self.sender()
         text = sender.toPlainText()
 
@@ -114,10 +125,13 @@ class VehicleModeWindow(QMainWindow):
             ('max_steer_angle', 31)
         ]
 
+        print(f"Text changed in sender: {sender} with new value: {text}")
+
         # 确保索引在范围内
         for key, idx in mapping:
             if sender == self.textEdits[idx]:
-                # 更新对应的yaml文件中的值
+                print(f"Updating {key} with new value: {text}")
+                # 更新对应的 YAML 文件中的值
                 if idx < 12:  # mirror.param.yaml
                     self.yaml_data_1[key] = text
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/mirror.param.yaml', self.yaml_data_1)
@@ -129,10 +143,12 @@ class VehicleModeWindow(QMainWindow):
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/vehicle_info.param.yaml', self.yaml_data_3)
 
     def save_yaml(self, file_path, data):
-        """保存YAML文件"""
+        """保存 YAML 文件"""
+        print(f"Saving YAML file: {file_path}")
         try:
             with open(file_path, 'w') as file:
                 yaml.safe_dump(data, file, default_flow_style=False)  # 确保格式正确
+            print(f"YAML file saved successfully: {file_path}")
         except Exception as e:
             print(f"Error saving YAML file {file_path}: {e}")
 
