@@ -4,18 +4,18 @@ package_name = 'goal_publisher'
 
 setup(
     name=package_name,
-    version='0.0.1',
+    version='0.0.0',
     packages=[package_name],
-    py_modules=['goal_publisher.goal_publisher'],  # 脚本所在模块
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='Your Name',
-    maintainer_email='your.email@example.com',
-    description='A simple ROS 2 package for publishing goals',
+    maintainer_email='your_email@example.com',
+    description='Goal publisher for ROS2',
     license='License',
+    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'goal_publisher = goal_publisher.goal_publisher:main',  # 设置脚本入口
+            'goal_publisher = goal_publisher.goal_publisher:main',  # 确保 main() 方法的路径正确
         ],
     },
 )
