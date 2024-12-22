@@ -15,9 +15,6 @@ class VehicleModeWindow(QMainWindow, Ui_VehicleModeWindow):
         self.yaml_data = yaml_data
         self.yaml_file = yaml_file
 
-        # 打印检查yaml_data
-        print(f"Loaded YAML Data in VehicleModeWindow: {self.yaml_data}")
-
         # 映射YAML数据到QTextEdit控件
         self.map_yaml_to_controls()
 
@@ -29,8 +26,8 @@ class VehicleModeWindow(QMainWindow, Ui_VehicleModeWindow):
 
     def map_yaml_to_controls(self):
         """将YAML文件中的参数映射到控件中"""
-        print("Mapping YAML data to controls...")  # 打印映射过程
-
+        print(f"Loaded YAML Data: {self.yaml_data}")  # 打印yaml_data
+        
         # 映射 YAML 数据到对应的 QTextEdit 控件
         self.textEdit_01.setText(str(self.yaml_data.get('wheel_radius', '')))
         self.textEdit_02.setText(str(self.yaml_data.get('wheel_width', '')))
@@ -64,8 +61,6 @@ class VehicleModeWindow(QMainWindow, Ui_VehicleModeWindow):
         self.textEdit_30.setText(str(self.yaml_data.get('left_overhang', '')))
         self.textEdit_31.setText(str(self.yaml_data.get('right_overhang', '')))
         self.textEdit_32.setText(str(self.yaml_data.get('max_steer_angle', '')))
-
-        print("YAML data mapping completed.")  # 显示映射完成
 
     def save_to_yaml(self):
         """保存修改后的值回YAML文件"""
@@ -152,18 +147,21 @@ class AutowareWindow(QMainWindow, Ui_autowareWindow):
 
     def open_vehicle_mode_window(self):
         """打开子界面，并将相应的YAML数据传递给子界面"""
-        first_yaml_file = list(self.yaml_files.keys())[0]  # 默认打开第一个YAML文件
-        yaml_data = self.yaml_files[first_yaml_file]
+        yaml_file_path = self.get_selected_yaml_file_path()  # 获取用户选择的文件路径
+        yaml_data = self.yaml_files.get(yaml_file_path)
 
-        # 打印加载的YAML数据，以确认其内容
-        print(f"Loaded YAML Data in AutowareWindow: {yaml_data}")
+        if yaml_data:
+            # 打开子界面并传入YAML数据
+            self.vehicle_mode_window = VehicleModeWindow(yaml_data, yaml_file_path)  # 传递文件路径
+            self.vehicle_mode_window.show()  # 使用show()来显示主窗口
+        else:
+            print("No YAML file selected!")
 
-        # 打开子界面并传入YAML数据
-        self.vehicle_mode_window = VehicleModeWindow(yaml_data, first_yaml_file)  # 传递文件路径
-        self.vehicle_mode_window.show()  # 使用show()来显示主窗口
+    def get_selected_yaml_file_path(self):
+        """根据需要返回一个具体的 YAML 文件路径"""
+        # 可以使用对话框或其他方式选择文件，这里简化为返回第一个文件
+        return list(self.yaml_files.keys())[0]  # 默认返回第一个文件路径
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    autoware_window = AutowareWindow()
-    autoware_window.show
