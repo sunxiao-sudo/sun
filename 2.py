@@ -6,6 +6,11 @@ from collections import OrderedDict  # 使用OrderedDict来确保顺序
 from VehicleMode import Ui_VehicleModeWindow  # 导入子界面的UI类
 from autoware import Ui_autowareWindow  # 导入主界面的UI类
 
+# 自定义 YAML Dumper 以确保保存时不对字典进行排序
+class MyDumper(yaml.Dumper):
+    def increase_indent(self, flow=False, indentless=False):
+        return super(MyDumper, self).increase_indent(flow, indentless)
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -156,10 +161,9 @@ class VehicleModeWindow(QMainWindow):
         """保存 YAML 文件"""
         print(f"Saving YAML file: {file_path}")
         try:
-            # 使用普通字典来保存
             with open(file_path, 'w') as file:
-                # 使用 yaml.safe_dump 来保留插入顺序
-                yaml.safe_dump(data, file, default_flow_style=False, allow_unicode=True, indent=2)
+                # 使用自定义的 MyDumper 来保留顺序
+                yaml.dump(data, file, default_flow_style=False, allow_unicode=True, indent=2, Dumper=MyDumper)
             print(f"YAML file saved successfully: {file_path}")
         except Exception as e:
             print(f"Error saving YAML file {file_path}: {e}")
