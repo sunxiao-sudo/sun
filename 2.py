@@ -144,13 +144,13 @@ class VehicleModeWindow(QMainWindow):
                 print(f"Updating {key} with new value: {text}")
                 # 更新对应的 YAML 文件中的值
                 if idx < 6:  # mirror.param.yaml
-                    self.yaml_data_1['/**']['ros__parameters'][key] = float(text)  # 确保存储为浮动类型
+                    self.yaml_data_1['/**']['ros__parameters'][key] = text  # 保持为字符串类型
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/mirror.param.yaml', self.yaml_data_1)
                 elif idx < 22:  # simulator_model.param.yaml
-                    self.yaml_data_2['/**']['ros__parameters'][key] = float(text)  # 确保存储为浮动类型
+                    self.yaml_data_2['/**']['ros__parameters'][key] = text  # 保持为字符串类型
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/simulator_model.param.yaml', self.yaml_data_2)
                 else:  # vehicle_info.param.yaml
-                    self.yaml_data_3['/**']['ros__parameters'][key] = float(text)  # 确保存储为浮动类型
+                    self.yaml_data_3['/**']['ros__parameters'][key] = text  # 保持为字符串类型
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/vehicle_info.param.yaml', self.yaml_data_3)
 
     def save_yaml(self, file_path, data):
@@ -158,6 +158,7 @@ class VehicleModeWindow(QMainWindow):
         print(f"Saving YAML file: {file_path}")
         try:
             yaml = ruamel.yaml.YAML()
+            yaml.default_style = '"'  # 强制使用双引号来保存字符串
             with open(file_path, 'w') as file:
                 # 使用 ruamel.yaml 保存 YAML，保留顺序和注释
                 yaml.dump(data, file)
