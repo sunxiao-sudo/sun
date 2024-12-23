@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton
 from PyQt5 import uic
 import ruamel.yaml
-from collections import OrderedDict  # 使用OrderedDict来确保顺序
+from collections import OrderedDict
 from VehicleMode import Ui_VehicleModeWindow  # 导入子界面的UI类
 from autoware import Ui_autowareWindow  # 导入主界面的UI类
 
@@ -54,8 +54,8 @@ class VehicleModeWindow(QMainWindow):
         print(f"Loading YAML file: {file_path}")
         try:
             with open(file_path, 'r') as file:
+                # 使用OrderedDict来保留顺序
                 yaml = ruamel.yaml.YAML()
-                # 使用 ruamel.yaml 来加载 YAML，保留顺序和注释
                 data = yaml.load(file)
                 print(f"Data loaded from {file_path}: {data}")
                 return data
@@ -69,6 +69,10 @@ class VehicleModeWindow(QMainWindow):
         yaml_data_1 = self.yaml_data_1.get('/**', {}).get('ros__parameters', {})
         yaml_data_2 = self.yaml_data_2.get('/**', {}).get('ros__parameters', {})
         yaml_data_3 = self.yaml_data_3.get('/**', {}).get('ros__parameters', {})
+
+        print(f"YAML data for mirror.param.yaml: {yaml_data_1}")
+        print(f"YAML data for simulator_model.param.yaml: {yaml_data_2}")
+        print(f"YAML data for vehicle_info.param.yaml: {yaml_data_3}")
 
         # 控件和 YAML 键值的映射关系
         mapping = [
@@ -140,13 +144,13 @@ class VehicleModeWindow(QMainWindow):
                 print(f"Updating {key} with new value: {text}")
                 # 更新对应的 YAML 文件中的值
                 if idx < 6:  # mirror.param.yaml
-                    self.yaml_data_1['/**']['ros__parameters'][key] = text  # 保持字符串不转换
+                    self.yaml_data_1['/**']['ros__parameters'][key] = float(text)  # 确保存储为浮动类型
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/mirror.param.yaml', self.yaml_data_1)
                 elif idx < 22:  # simulator_model.param.yaml
-                    self.yaml_data_2['/**']['ros__parameters'][key] = text  # 保持字符串不转换
+                    self.yaml_data_2['/**']['ros__parameters'][key] = float(text)  # 确保存储为浮动类型
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/simulator_model.param.yaml', self.yaml_data_2)
                 else:  # vehicle_info.param.yaml
-                    self.yaml_data_3['/**']['ros__parameters'][key] = text  # 保持字符串不转换
+                    self.yaml_data_3['/**']['ros__parameters'][key] = float(text)  # 确保存储为浮动类型
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/vehicle_info.param.yaml', self.yaml_data_3)
 
     def save_yaml(self, file_path, data):
@@ -154,16 +158,21 @@ class VehicleModeWindow(QMainWindow):
         print(f"Saving YAML file: {file_path}")
         try:
             yaml = ruamel.yaml.YAML()
-            yaml.default_style = '"'  # 设置为双引号样式
+            yaml.default_style = None  # 不指定样式，默认不加引号
             yaml.allow_unicode = True  # 允许unicode字符
+            yaml.default_flow_style = False  # 使用块样式（不使用流样式）
+            yaml.preserve_quotes = False  # 不强制保留引号
+
+            # 在保存之前，确保将 OrderedDict 转换为普通字典
             with open(file_path, 'w') as file:
                 yaml.dump(data, file)  # 使用ruamel.yaml.dump来保存文件
             print(f"YAML file saved successfully: {file_path}")
         except Exception as e:
             print(f"Error saving YAML file {file_path}: {e}")
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = MainWindow()  # 启动主界面
+    window = MainWindow()
     window.show()
     sys.exit(app.exec_())
