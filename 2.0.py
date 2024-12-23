@@ -50,11 +50,14 @@ class VehicleModeWindow(QMainWindow):
         self.connect_text_edits()
 
     def load_yaml(self, file_path):
-        """加载 YAML 文件"""
+        """加载 YAML 文件并确保顺序"""
         print(f"Loading YAML file: {file_path}")
         try:
             with open(file_path, 'r') as file:
+                # 使用OrderedDict来保留顺序
                 data = yaml.safe_load(file) or {}
+                if isinstance(data, dict):
+                    data = OrderedDict(data)
                 print(f"Data loaded from {file_path}: {data}")
                 return data
         except Exception as e:
@@ -143,7 +146,6 @@ class VehicleModeWindow(QMainWindow):
                 # 更新对应的 YAML 文件中的值
                 if idx < 12:  # mirror.param.yaml
                     self.yaml_data_1['/**']['ros__parameters'][key] = float(text)  # 确保存储为浮动类型
-                    self.remove_duplicate_key(self.yaml_data_1, key)  # 删除最外层重复的key
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/mirror.param.yaml', self.yaml_data_1)
                 elif idx < 24:  # simulator_model.param.yaml
                     self.yaml_data_2[key] = text
@@ -151,11 +153,6 @@ class VehicleModeWindow(QMainWindow):
                 else:  # vehicle_info.param.yaml
                     self.yaml_data_3[key] = text
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/vehicle_info.param.yaml', self.yaml_data_3)
-
-    def remove_duplicate_key(self, data, key):
-        """删除最外层的重复键"""
-        if key in data:
-            del data[key]
 
     def save_yaml(self, file_path, data):
         """保存 YAML 文件"""
