@@ -62,7 +62,7 @@ class VehicleModeWindow(QMainWindow):
 
     def fill_text_edits(self):
         """填充 QTextEdit 控件"""
-        # 分别获取每个 YAML 文件的 ros__parameters 部分
+        # 获取每个 YAML 文件的 ros__parameters 部分
         yaml_data_1 = self.yaml_data_1.get('/**', {}).get('ros__parameters', {})
         yaml_data_2 = self.yaml_data_2.get('/**', {}).get('ros__parameters', {})
         yaml_data_3 = self.yaml_data_3.get('/**', {}).get('ros__parameters', {})
@@ -73,8 +73,8 @@ class VehicleModeWindow(QMainWindow):
 
         # 控件和 YAML 键值的映射关系
         mapping = [
-            ('wheel_radius', 0), ('wheel_width', 1), ('wheel_base', 2),
-            ('front_overhang', 3), ('rear_overhang', 4), ('left_overhang', 5),
+            ('min_longitudinal_offset', 0), ('max_longitudinal_offset', 1), ('min_lateral_offset', 2),
+            ('max_lateral_offset', 3), ('min_height_offset', 4), ('max_height_offset', 5),
             ('simulated_frame_id', 6), ('origin_frame_id', 7), ('vehicle_model_type', 8),
             ('initialize_source', 9), ('timer_sampling_time_ms', 10), ('add_measurement_noise', 11),
             ('vel_lim', 12), ('vel_rate_lim', 13), ('steer_lim', 14), ('steer_rate_lim', 15),
@@ -120,8 +120,8 @@ class VehicleModeWindow(QMainWindow):
         text = sender.toPlainText()
 
         mapping = [
-            ('wheel_radius', 0), ('wheel_width', 1), ('wheel_base', 2),
-            ('front_overhang', 3), ('rear_overhang', 4), ('left_overhang', 5),
+            ('min_longitudinal_offset', 0), ('max_longitudinal_offset', 1), ('min_lateral_offset', 2),
+            ('max_lateral_offset', 3), ('min_height_offset', 4), ('max_height_offset', 5),
             ('simulated_frame_id', 6), ('origin_frame_id', 7), ('vehicle_model_type', 8),
             ('initialize_source', 9), ('timer_sampling_time_ms', 10), ('add_measurement_noise', 11),
             ('vel_lim', 12), ('vel_rate_lim', 13), ('steer_lim', 14), ('steer_rate_lim', 15),
