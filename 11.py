@@ -91,12 +91,12 @@ class VehicleModeWindow(QMainWindow):
             value = str(yaml_data.get(key, ''))
             # 确保 textEdits 已经初始化
             if len(self.textEdits) <= idx:
-                text_edit = self.findChild(QTextEdit, f'textEdit_{idx + 1}')
+                text_edit = self.findChild(QTextEdit, f'textEdit_{idx + 1:02d}')  # 格式化为 2 位数
                 if text_edit:
                     self.textEdits.append(text_edit)
             # 更新 QTextEdit 控件的文本
             if idx < len(self.textEdits):
-                print(f"Setting text for {key} (textEdit_{idx + 1}) to: {value}")
+                print(f"Setting text for {key} (textEdit_{idx + 1:02d}) to: {value}")
                 self.textEdits[idx].setText(value)
 
     def connect_text_edits(self):
@@ -104,7 +104,7 @@ class VehicleModeWindow(QMainWindow):
         for i in range(32):
             text_edit = self.textEdits[i] if i < len(self.textEdits) else None
             if text_edit:
-                print(f"Connecting textChanged signal for textEdit_{i + 1}")
+                print(f"Connecting textChanged signal for textEdit_{i + 1:02d}")
                 text_edit.textChanged.connect(self.on_text_changed)
 
     def on_text_changed(self):
