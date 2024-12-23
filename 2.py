@@ -144,32 +144,42 @@ class VehicleModeWindow(QMainWindow):
                 print(f"Updating {key} with new value: {text}")
                 # 更新对应的 YAML 文件中的值
                 if idx < 6:  # mirror.param.yaml
-                    self.yaml_data_1['/**']['ros__parameters'][key] = float(text)  # 确保存储为浮动类型
+                    self.yaml_data_1['/**']['ros__parameters'][key] = text  # 保持文本类型
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/mirror.param.yaml', self.yaml_data_1)
-                elif idx < 22:  # simulator_model.param.yaml
-                    self.yaml_data_2['/**']['ros__parameters'][key] = float(text)  # 确保存储为浮动类型
+                elif idx < 12:  # simulator_model.param.yaml
+                    self.yaml_data_2['/**']['ros__parameters'][key] = text
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/simulator_model.param.yaml', self.yaml_data_2)
                 else:  # vehicle_info.param.yaml
-                    self.yaml_data_3['/**']['ros__parameters'][key] = float(text)  # 确保存储为浮动类型
+                    self.yaml_data_3['/**']['ros__parameters'][key] = text
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/vehicle_info.param.yaml', self.yaml_data_3)
 
     def save_yaml(self, file_path, data):
-        """保存 YAML 文件"""
-        print(f"Saving YAML file: {file_path}")
+        """保存 YAML 文件，确保格式正确"""
         try:
             yaml = ruamel.yaml.YAML()
-            yaml.default_style = None  # 不指定样式，默认不加引号
+            yaml.default_style = None  # 不加引号
             yaml.allow_unicode = True  # 允许unicode字符
-            yaml.default_flow_style = False  # 使用块样式（不使用流样式）
-            yaml.preserve_quotes = False  # 不强制保留引号
+            yaml.default_flow_style = False  # 使用块样式
+            yaml.preserve_quotes = True  # 保持双引号在字符串值中
 
-            # 在保存之前，确保将 OrderedDict 转换为普通字典
+            # 自定义类型表示器，确保数字不加引号，字符串加双引号
+            yaml.representer.add_representer(str, self.represent_string)
+            yaml.representer.add_representer(float, self.represent_float)
+
             with open(file_path, 'w') as file:
-                yaml.dump(data, file)  # 使用ruamel.yaml.dump来保存文件
+                yaml.dump(data, file)
             print(f"YAML file saved successfully: {file_path}")
         except Exception as e:
             print(f"Error saving YAML file {file_path}: {e}")
 
+    def represent_string(self, dumper, value):
+        """确保字符串加双引号"""
+        return dumper.represent_scalar('tag:yaml.org,2002:str', value, style='"')
+
+    def represent_float(self, dumper, value):
+        """确保浮点数不加引号"""
+        return dumper.represent_float(value)
+    
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
