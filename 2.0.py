@@ -2,6 +2,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton
 from PyQt5 import uic
 import yaml
+from collections import OrderedDict  # 导入OrderedDict来保留顺序
 from VehicleMode import Ui_VehicleModeWindow  # 导入子界面的UI类
 from autoware import Ui_autowareWindow  # 导入主界面的UI类
 
@@ -141,7 +142,7 @@ class VehicleModeWindow(QMainWindow):
                 print(f"Updating {key} with new value: {text}")
                 # 更新对应的 YAML 文件中的值
                 if idx < 12:  # mirror.param.yaml
-                    self.yaml_data_1['/**']['ros__parameters'][key] = text
+                    self.yaml_data_1['/**']['ros__parameters'][key] = float(text)  # 确保存储为浮动类型
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/mirror.param.yaml', self.yaml_data_1)
                 elif idx < 24:  # simulator_model.param.yaml
                     self.yaml_data_2[key] = text
@@ -154,8 +155,9 @@ class VehicleModeWindow(QMainWindow):
         """保存 YAML 文件"""
         print(f"Saving YAML file: {file_path}")
         try:
+            # 使用OrderedDict确保顺序不变
             with open(file_path, 'w') as file:
-                yaml.safe_dump(data, file, default_flow_style=False)  # 确保格式正确
+                yaml.dump(data, file, default_flow_style=False, allow_unicode=True, Dumper=yaml.Dumper)  # 使用Dumper避免键的重排
             print(f"YAML file saved successfully: {file_path}")
         except Exception as e:
             print(f"Error saving YAML file {file_path}: {e}")
