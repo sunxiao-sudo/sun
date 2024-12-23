@@ -56,7 +56,7 @@ class VehicleModeWindow(QMainWindow):
             with open(file_path, 'r') as file:
                 # 使用OrderedDict来保留顺序
                 data = yaml.safe_load(file) or {}
-                # 确保返回的字典是有顺序的
+                # 如果返回的是字典，转换为OrderedDict，确保顺序
                 if isinstance(data, dict):
                     data = OrderedDict(data)
                 print(f"Data loaded from {file_path}: {data}")
@@ -161,8 +161,7 @@ class VehicleModeWindow(QMainWindow):
         try:
             # 使用OrderedDict确保顺序不变
             with open(file_path, 'w') as file:
-                yaml = YAML(typ='safe')  # 使用 safe 类型保存
-                yaml.dump(data, file)  # 使用yaml.dump保存数据并保留顺序
+                yaml.dump(data, file, default_flow_style=False, allow_unicode=True)  # 使用PyYAML进行保存
             print(f"YAML file saved successfully: {file_path}")
         except Exception as e:
             print(f"Error saving YAML file {file_path}: {e}")
