@@ -62,7 +62,7 @@ class VehicleModeWindow(QMainWindow):
 
     def fill_text_edits(self):
         """填充 QTextEdit 控件"""
-        # 使用文件独立的 `ros__parameters` 数据填充文本框
+        # 分别获取每个 YAML 文件的 ros__parameters 部分
         yaml_data_1 = self.yaml_data_1.get('/**', {}).get('ros__parameters', {})
         yaml_data_2 = self.yaml_data_2.get('/**', {}).get('ros__parameters', {})
         yaml_data_3 = self.yaml_data_3.get('/**', {}).get('ros__parameters', {})
@@ -88,13 +88,12 @@ class VehicleModeWindow(QMainWindow):
 
         # 填充数据到 QTextEdit 控件
         for key, idx in mapping:
-            # 判断哪个 YAML 文件有这个键，并选择其对应的值
             value = ''
-            if key in yaml_data_1:
+            if key in yaml_data_1:  # 从 mirror.param.yaml 中获取值
                 value = str(yaml_data_1.get(key, ''))
-            elif key in yaml_data_2:
+            elif key in yaml_data_2:  # 从 simulator_model.param.yaml 中获取值
                 value = str(yaml_data_2.get(key, ''))
-            elif key in yaml_data_3:
+            elif key in yaml_data_3:  # 从 vehicle_info.param.yaml 中获取值
                 value = str(yaml_data_3.get(key, ''))
 
             # 确保 textEdits 已经初始化
