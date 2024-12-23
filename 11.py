@@ -2,8 +2,10 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton
 from PyQt5 import uic
 import yaml
+from collections import OrderedDict  # 使用OrderedDict来确保顺序
 from VehicleMode import Ui_VehicleModeWindow  # 导入子界面的UI类
 from autoware import Ui_autowareWindow  # 导入主界面的UI类
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -49,11 +51,14 @@ class VehicleModeWindow(QMainWindow):
         self.connect_text_edits()
 
     def load_yaml(self, file_path):
-        """加载 YAML 文件"""
+        """加载 YAML 文件并确保顺序"""
         print(f"Loading YAML file: {file_path}")
         try:
             with open(file_path, 'r') as file:
+                # 使用OrderedDict来保留顺序
                 data = yaml.safe_load(file) or {}
+                if isinstance(data, dict):
+                    data = OrderedDict(data)
                 print(f"Data loaded from {file_path}: {data}")
                 return data
         except Exception as e:
@@ -62,7 +67,7 @@ class VehicleModeWindow(QMainWindow):
 
     def fill_text_edits(self):
         """填充 QTextEdit 控件"""
-        # 使用文件独立的 `ros__parameters` 数据填充文本框
+        # 获取每个 YAML 文件的 ros__parameters 部分
         yaml_data_1 = self.yaml_data_1.get('/**', {}).get('ros__parameters', {})
         yaml_data_2 = self.yaml_data_2.get('/**', {}).get('ros__parameters', {})
         yaml_data_3 = self.yaml_data_3.get('/**', {}).get('ros__parameters', {})
@@ -73,8 +78,8 @@ class VehicleModeWindow(QMainWindow):
 
         # 控件和 YAML 键值的映射关系
         mapping = [
-            ('wheel_radius', 0), ('wheel_width', 1), ('wheel_base', 2),
-            ('front_overhang', 3), ('rear_overhang', 4), ('left_overhang', 5),
+            ('min_longitudinal_offset', 0), ('max_longitudinal_offset', 1), ('min_lateral_offset', 2),
+            ('max_lateral_offset', 3), ('min_height_offset', 4), ('max_height_offset', 5),
             ('simulated_frame_id', 6), ('origin_frame_id', 7), ('vehicle_model_type', 8),
             ('initialize_source', 9), ('timer_sampling_time_ms', 10), ('add_measurement_noise', 11),
             ('vel_lim', 12), ('vel_rate_lim', 13), ('steer_lim', 14), ('steer_rate_lim', 15),
@@ -88,13 +93,12 @@ class VehicleModeWindow(QMainWindow):
 
         # 填充数据到 QTextEdit 控件
         for key, idx in mapping:
-            # 判断哪个 YAML 文件有这个键，并选择其对应的值
             value = ''
-            if key in yaml_data_1:
+            if key in yaml_data_1:  # 从 mirror.param.yaml 中获取值
                 value = str(yaml_data_1.get(key, ''))
-            elif key in yaml_data_2:
+            elif key in yaml_data_2:  # 从 simulator_model.param.yaml 中获取值
                 value = str(yaml_data_2.get(key, ''))
-            elif key in yaml_data_3:
+            elif key in yaml_data_3:  # 从 vehicle_info.param.yaml 中获取值
                 value = str(yaml_data_3.get(key, ''))
 
             # 确保 textEdits 已经初始化
@@ -121,8 +125,8 @@ class VehicleModeWindow(QMainWindow):
         text = sender.toPlainText()
 
         mapping = [
-            ('wheel_radius', 0), ('wheel_width', 1), ('wheel_base', 2),
-            ('front_overhang', 3), ('rear_overhang', 4), ('left_overhang', 5),
+            ('min_longitudinal_offset', 0), ('max_longitudinal_offset', 1), ('min_lateral_offset', 2),
+            ('max_lateral_offset', 3), ('min_height_offset', 4), ('max_height_offset', 5),
             ('simulated_frame_id', 6), ('origin_frame_id', 7), ('vehicle_model_type', 8),
             ('initialize_source', 9), ('timer_sampling_time_ms', 10), ('add_measurement_noise', 11),
             ('vel_lim', 12), ('vel_rate_lim', 13), ('steer_lim', 14), ('steer_rate_lim', 15),
@@ -142,7 +146,7 @@ class VehicleModeWindow(QMainWindow):
                 print(f"Updating {key} with new value: {text}")
                 # 更新对应的 YAML 文件中的值
                 if idx < 12:  # mirror.param.yaml
-                    self.yaml_data_1[key] = text
+                    self.yaml_data_1['/**']['ros__parameters'][key] = float(text)  # 确保存储为浮动类型
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/mirror.param.yaml', self.yaml_data_1)
                 elif idx < 24:  # simulator_model.param.yaml
                     self.yaml_data_2[key] = text
@@ -155,8 +159,9 @@ class VehicleModeWindow(QMainWindow):
         """保存 YAML 文件"""
         print(f"Saving YAML file: {file_path}")
         try:
+            # 使用OrderedDict确保顺序不变
             with open(file_path, 'w') as file:
-                yaml.safe_dump(data, file, default_flow_style=False)  # 确保格式正确
+                yaml.dump(data, file, default_flow_style=False, allow_unicode=True, Dumper=yaml.Dumper)  # 使用Dumper避免键的重排
             print(f"YAML file saved successfully: {file_path}")
         except Exception as e:
             print(f"Error saving YAML file {file_path}: {e}")
