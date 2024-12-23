@@ -62,14 +62,14 @@ class VehicleModeWindow(QMainWindow):
 
     def fill_text_edits(self):
         """填充 QTextEdit 控件"""
-        # 合并3个 YAML 文件的数据
-        yaml_data = {
-            **self.yaml_data_1.get('/**', {}).get('ros__parameters', {}),
-            **self.yaml_data_2.get('/**', {}).get('ros__parameters', {}),
-            **self.yaml_data_3.get('/**', {}).get('ros__parameters', {})
-        }
+        # 使用文件独立的 `ros__parameters` 数据填充文本框
+        yaml_data_1 = self.yaml_data_1.get('/**', {}).get('ros__parameters', {})
+        yaml_data_2 = self.yaml_data_2.get('/**', {}).get('ros__parameters', {})
+        yaml_data_3 = self.yaml_data_3.get('/**', {}).get('ros__parameters', {})
 
-        print(f"Combined YAML data: {yaml_data}")
+        print(f"YAML data for mirror.param.yaml: {yaml_data_1}")
+        print(f"YAML data for simulator_model.param.yaml: {yaml_data_2}")
+        print(f"YAML data for vehicle_info.param.yaml: {yaml_data_3}")
 
         # 控件和 YAML 键值的映射关系
         mapping = [
@@ -88,7 +88,15 @@ class VehicleModeWindow(QMainWindow):
 
         # 填充数据到 QTextEdit 控件
         for key, idx in mapping:
-            value = str(yaml_data.get(key, ''))
+            # 判断哪个 YAML 文件有这个键，并选择其对应的值
+            value = ''
+            if key in yaml_data_1:
+                value = str(yaml_data_1.get(key, ''))
+            elif key in yaml_data_2:
+                value = str(yaml_data_2.get(key, ''))
+            elif key in yaml_data_3:
+                value = str(yaml_data_3.get(key, ''))
+
             # 确保 textEdits 已经初始化
             if len(self.textEdits) <= idx:
                 text_edit = self.findChild(QTextEdit, f'textEdit_{idx + 1:02d}')  # 格式化为 2 位数
@@ -138,24 +146,4 @@ class VehicleModeWindow(QMainWindow):
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/mirror.param.yaml', self.yaml_data_1)
                 elif idx < 24:  # simulator_model.param.yaml
                     self.yaml_data_2[key] = text
-                    self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/simulator_model.param.yaml', self.yaml_data_2)
-                else:  # vehicle_info.param.yaml
-                    self.yaml_data_3[key] = text
-                    self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/vehicle_info.param.yaml', self.yaml_data_3)
-
-    def save_yaml(self, file_path, data):
-        """保存 YAML 文件"""
-        print(f"Saving YAML file: {file_path}")
-        try:
-            with open(file_path, 'w') as file:
-                yaml.safe_dump(data, file, default_flow_style=False)  # 确保格式正确
-            print(f"YAML file saved successfully: {file_path}")
-        except Exception as e:
-            print(f"Error saving YAML file {file_path}: {e}")
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MainWindow()  # 启动主界面
-    window.show()
-    sys.exit(app.exec_())
+                    self.save
