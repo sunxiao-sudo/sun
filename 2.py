@@ -6,6 +6,7 @@ from collections import OrderedDict  # 使用OrderedDict来确保顺序
 from VehicleMode import Ui_VehicleModeWindow  # 导入子界面的UI类
 from autoware import Ui_autowareWindow  # 导入主界面的UI类
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -89,6 +90,12 @@ class VehicleModeWindow(QMainWindow):
             ('max_steer_angle', 31)
         ]
 
+        # 特定键需要加双引号
+        quote_keys = {
+            "base_link", "map", "DELAY_STEER_ACC_GEARED", "INITIAL_POSE_TOPIC",
+            "IDEAL_STEER_VEL", "IDEAL_STEER_ACC", "IDEAL_STEER_ACC_GEARED", "DELAY_STEER_ACC", "ORIGIN"
+        }
+
         # 填充数据到 QTextEdit 控件
         for key, idx in mapping:
             value = ''
@@ -98,6 +105,10 @@ class VehicleModeWindow(QMainWindow):
                 value = str(yaml_data_2.get(key, ''))
             elif key in yaml_data_3:  # 从 vehicle_info.param.yaml 中获取值
                 value = str(yaml_data_3.get(key, ''))
+
+            # 检查键是否需要加双引号
+            if key in quote_keys:
+                value = f'"{value}"'
 
             # 确保 textEdits 已经初始化
             if len(self.textEdits) <= idx:
@@ -122,13 +133,6 @@ class VehicleModeWindow(QMainWindow):
         sender = self.sender()
         text = sender.toPlainText()
 
-        # 特定键需要双引号
-        quote_keys = {
-            "base_link", "map", "DELAY_STEER_ACC_GEARED", "INITIAL_POSE_TOPIC", "IDEAL_STEER_VEL",
-            "IDEAL_STEER_ACC", "IDEAL_STEER_ACC_GEARED", "DELAY_STEER_ACC", "ORIGIN",
-        }
-
-        # 控件与 YAML 键值的映射关系
         mapping = [
             ('min_longitudinal_offset', 0), ('max_longitudinal_offset', 1), ('min_lateral_offset', 2),
             ('max_lateral_offset', 3), ('min_height_offset', 4), ('max_height_offset', 5),
@@ -149,35 +153,45 @@ class VehicleModeWindow(QMainWindow):
         for key, idx in mapping:
             if sender == self.textEdits[idx]:
                 print(f"Updating {key} with new value: {text}")
-                # 处理值并确保添加双引号或不添加
-                if key in quote_keys:  # 如果是需要双引号的键
-                    value = f'"{text}"'  # 添加双引号
-                elif text.replace(".", "", 1).isdigit():  # 数字类型的值
-                    value = float(text)  # 不加双引号的键使用数值类型
-                else:
-                    value = text  # 其余直接作为字符串
-
                 # 更新对应的 YAML 文件中的值
                 if idx < 6:  # mirror.param.yaml
-                    self.yaml_data_1['/**']['ros__parameters'][key] = value
-                    self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/mirror.param.yaml', self.yaml_data_1)
+                    self.yaml_data_1['/**']['ros__parameters'][key] = text
+                    self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/mirror.param.yaml')
                 elif idx < 22:  # simulator_model.param.yaml
-                    self.yaml_data_2['/**']['ros__parameters'][key] = value
-                    self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/simulator_model.param.yaml', self.yaml_data_2)
+                    self.yaml_data_2['/**']['ros__parameters'][key] = text
+                    self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/simulator_model.param.yaml')
                 else:  # vehicle_info.param.yaml
-                    self.yaml_data_3['/**']['ros__parameters'][key] = value
-                    self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/vehicle_info.param.yaml', self.yaml_data_3)
+                    self.yaml_data_3['/**']['ros__parameters'][key] = text
+                    self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/vehicle_info.param.yaml')
 
-    def save_yaml(self, file_path, data):
+    def save_yaml(self, file_path):
         """保存 YAML 文件"""
-        print(f"Saving YAML data to {file_path}...")
+        print(f"Saving YAML file: {file_path}")
         try:
+            # 遍历并确保布尔值存储为原生布尔值
+            self._convert_booleans(self.yaml_data_2)
+
+            yaml = ruamel.yaml.YAML()
             with open(file_path, 'w') as file:
-                yaml = ruamel.yaml.YAML()
-                yaml.dump(data, file)
-                print(f"Data saved successfully to {file_path}")
+                yaml.dump(self.yaml_data_2, file)
+            print(f"YAML file saved successfully: {file_path}")
         except Exception as e:
             print(f"Error saving YAML file {file_path}: {e}")
+
+    def _convert_booleans(self, data):
+        """递归处理数据，将布尔值转换为原生布尔类型"""
+        if isinstance(data, dict):
+            for key, value in data.items():
+                self._convert_booleans(value)
+        elif isinstance(data, list):
+            for item in data:
+                self._convert_booleans(item)
+        elif isinstance(data, str):
+            if data.lower() == 'true':
+                return True
+            elif data.lower() == 'false':
+                return False
+        return data
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
