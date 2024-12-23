@@ -1,11 +1,10 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton
 from PyQt5 import uic
-import ruamel.yaml  # 使用 ruamel.yaml 来保留注释
+import ruamel.yaml
 from collections import OrderedDict  # 使用OrderedDict来确保顺序
 from VehicleMode import Ui_VehicleModeWindow  # 导入子界面的UI类
 from autoware import Ui_autowareWindow  # 导入主界面的UI类
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -55,8 +54,8 @@ class VehicleModeWindow(QMainWindow):
         print(f"Loading YAML file: {file_path}")
         try:
             with open(file_path, 'r') as file:
-                # 使用 ruamel.yaml 来保留注释和顺序
                 yaml = ruamel.yaml.YAML()
+                # 使用 ruamel.yaml 来加载 YAML，保留顺序和注释
                 data = yaml.load(file)
                 print(f"Data loaded from {file_path}: {data}")
                 return data
@@ -144,34 +143,23 @@ class VehicleModeWindow(QMainWindow):
             if sender == self.textEdits[idx]:
                 print(f"Updating {key} with new value: {text}")
                 # 更新对应的 YAML 文件中的值
-                if idx == 27:  # 特别处理 vehicle_height 键
+                if idx < 6:  # mirror.param.yaml
                     self.yaml_data_1['/**']['ros__parameters'][key] = float(text)  # 确保存储为浮动类型
-                    self.remove_duplicate_key(self.yaml_data_1, key)  # 删除最外层重复的key
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/mirror.param.yaml', self.yaml_data_1)
-                elif idx == 14:  # 特别处理 steer_lim 键
+                elif idx < 22:  # simulator_model.param.yaml
                     self.yaml_data_2['/**']['ros__parameters'][key] = float(text)  # 确保存储为浮动类型
-                    self.remove_duplicate_key(self.yaml_data_2, key)  # 删除最外层重复的key
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/simulator_model.param.yaml', self.yaml_data_2)
-                else:
-                    if idx < 24:  # simulator_model.param.yaml
-                        self.yaml_data_2[key] = text
-                        self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/simulator_model.param.yaml', self.yaml_data_2)
-                    else:  # vehicle_info.param.yaml
-                        self.yaml_data_3[key] = text
-                        self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/vehicle_info.param.yaml', self.yaml_data_3)
-
-    def remove_duplicate_key(self, data, key):
-        """删除最外层的重复键"""
-        if key in data:
-            del data[key]
+                else:  # vehicle_info.param.yaml
+                    self.yaml_data_3['/**']['ros__parameters'][key] = float(text)  # 确保存储为浮动类型
+                    self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/vehicle_info.param.yaml', self.yaml_data_3)
 
     def save_yaml(self, file_path, data):
         """保存 YAML 文件"""
         print(f"Saving YAML file: {file_path}")
         try:
-            # 使用 ruamel.yaml 保留注释
             yaml = ruamel.yaml.YAML()
             with open(file_path, 'w') as file:
+                # 使用 ruamel.yaml 保存 YAML，保留顺序和注释
                 yaml.dump(data, file)
             print(f"YAML file saved successfully: {file_path}")
         except Exception as e:
