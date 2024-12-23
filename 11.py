@@ -6,7 +6,6 @@ from collections import OrderedDict  # 使用OrderedDict来确保顺序
 from VehicleMode import Ui_VehicleModeWindow  # 导入子界面的UI类
 from autoware import Ui_autowareWindow  # 导入主界面的UI类
 
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -57,6 +56,7 @@ class VehicleModeWindow(QMainWindow):
             with open(file_path, 'r') as file:
                 # 使用OrderedDict来保留顺序
                 data = yaml.safe_load(file) or {}
+                # 确保返回的字典是有顺序的
                 if isinstance(data, dict):
                     data = OrderedDict(data)
                 print(f"Data loaded from {file_path}: {data}")
@@ -161,7 +161,8 @@ class VehicleModeWindow(QMainWindow):
         try:
             # 使用OrderedDict确保顺序不变
             with open(file_path, 'w') as file:
-                yaml.dump(data, file, default_flow_style=False, allow_unicode=True, Dumper=yaml.Dumper)  # 使用Dumper避免键的重排
+                yaml = YAML(typ='safe')  # 使用 safe 类型保存
+                yaml.dump(data, file)  # 使用yaml.dump保存数据并保留顺序
             print(f"YAML file saved successfully: {file_path}")
         except Exception as e:
             print(f"Error saving YAML file {file_path}: {e}")
