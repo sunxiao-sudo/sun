@@ -161,6 +161,7 @@ class VehicleModeWindow(QMainWindow):
         try:
             # 在保存之前，确保将 OrderedDict 转换为普通字典
             data_dict = self.convert_ordered_dict_to_dict(data)
+            print(f"Converted data to dict: {data_dict}")  # 打印转换后的数据，检查其格式
             with open(file_path, 'w') as file:
                 # 使用yaml.safe_dump避免Python对象类型
                 yaml.safe_dump(data_dict, file, default_flow_style=False, allow_unicode=True)  # 使用safe_dump来避免YAML中嵌入Python对象
