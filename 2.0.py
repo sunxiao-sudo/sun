@@ -159,12 +159,24 @@ class VehicleModeWindow(QMainWindow):
         """保存 YAML 文件"""
         print(f"Saving YAML file: {file_path}")
         try:
+            # 在保存之前，确保将 OrderedDict 转换为普通字典
+            data_dict = self.convert_ordered_dict_to_dict(data)
             with open(file_path, 'w') as file:
-                # 使用OrderedDict确保顺序不变
-                yaml.safe_dump(data, file, default_flow_style=False, allow_unicode=True)  # 使用safe_dump来避免YAML中嵌入Python对象
+                # 使用yaml.safe_dump避免Python对象类型
+                yaml.safe_dump(data_dict, file, default_flow_style=False, allow_unicode=True)  # 使用safe_dump来避免YAML中嵌入Python对象
             print(f"YAML file saved successfully: {file_path}")
         except Exception as e:
             print(f"Error saving YAML file {file_path}: {e}")
+
+    def convert_ordered_dict_to_dict(self, data):
+        """递归地将 OrderedDict 转换为普通字典"""
+        if isinstance(data, OrderedDict):
+            return {key: self.convert_ordered_dict_to_dict(value) if isinstance(value, (OrderedDict, dict)) else value
+                    for key, value in data.items()}
+        elif isinstance(data, dict):
+            return {key: self.convert_ordered_dict_to_dict(value) for key, value in data.items()}
+        else:
+            return data
 
 
 if __name__ == "__main__":
