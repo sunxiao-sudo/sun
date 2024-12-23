@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton
 from PyQt5 import uic
 import ruamel.yaml
-from collections import OrderedDict
+from collections import OrderedDict  # 使用OrderedDict来确保顺序
 from VehicleMode import Ui_VehicleModeWindow  # 导入子界面的UI类
 from autoware import Ui_autowareWindow  # 导入主界面的UI类
 
@@ -54,42 +54,15 @@ class VehicleModeWindow(QMainWindow):
         """加载 YAML 文件并确保顺序"""
         print(f"Loading YAML file: {file_path}")
         try:
-            yaml = ruamel.yaml.YAML()
-
-            # 设置为不使用默认的引号，只对字符串值加双引号
-            yaml.default_style = None  # 默认为不加引号
-            yaml.preserve_quotes = True  # 保留原始文件中的引号
-
-            # 加载YAML文件内容
-            data = yaml.load(open(file_path, 'r'))
-            print(f"Data loaded from {file_path}: {data}")
-            return data
+            with open(file_path, 'r') as file:
+                yaml = ruamel.yaml.YAML()
+                # 使用 ruamel.yaml 来加载 YAML，保留顺序和注释
+                data = yaml.load(file)
+                print(f"Data loaded from {file_path}: {data}")
+                return data
         except Exception as e:
             print(f"Error loading YAML file {file_path}: {e}")
             return {}
-
-    def save_yaml(self, file_path, data):
-        """保存 YAML 文件时确保值为字符串时加引号，值为其他类型时不加引号"""
-        print(f"Saving YAML file: {file_path}")
-
-        try:
-            yaml = ruamel.yaml.YAML()
-
-            # 定义一个函数确保字符串值加双引号
-            def representer(dumper, data):
-                if isinstance(data, str):  # 如果值是字符串
-                    return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='"')  # 给字符串值加双引号
-                return dumper.represent_scalar('tag:yaml.org,2002:str', data)  # 非字符串值保持原样
-
-            yaml.representer.add_representer(str, representer)
-
-            # 保存数据
-            with open(file_path, 'w') as f:
-                yaml.dump(data, f)
-            print(f"YAML file saved successfully to {file_path}")
-
-        except Exception as e:
-            print(f"Error saving YAML file {file_path}: {e}")
 
     def fill_text_edits(self):
         """填充 QTextEdit 控件"""
@@ -164,28 +137,54 @@ class VehicleModeWindow(QMainWindow):
             ('max_steer_angle', 31)
         ]
 
+        print(f"Text changed in sender: {sender} with new value: {text}")
+
+        # 确保索引在范围内
         for key, idx in mapping:
             if sender == self.textEdits[idx]:
                 print(f"Updating {key} with new value: {text}")
+
+                # 动态判断数据类型
+                try:
+                    if text.lower() == 'true':
+                        value = True
+                    elif text.lower() == 'false':
+                        value = False
+                    elif text.isdigit():  # 处理整数
+                        value = int(text)
+                    else:
+                        try:  # 处理浮动类型
+                            value = float(text)
+                        except ValueError:
+                            value = text  # 如果无法转换为 float，保留为字符串
+                except Exception as e:
+                    print(f"Error converting text to appropriate type: {e}")
+                    value = text  # 如果转换失败，保留为字符串
+
                 # 更新对应的 YAML 文件中的值
                 if idx < 6:  # mirror.param.yaml
-                    self.yaml_data_1['/**']['ros__parameters'][key] = text
-                elif idx < 12:  # simulator_model.param.yaml
-                    self.yaml_data_2['/**']['ros__parameters'][key] = text
-                else:  # vehicle_info.param.yaml
-                    self.yaml_data_3['/**']['ros__parameters'][key] = text
-
-                # 保存更新后的 YAML 文件
-                if idx < 6:
+                    self.yaml_data_1['/**']['ros__parameters'][key] = value
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/mirror.param.yaml', self.yaml_data_1)
-                elif idx < 12:
+                elif idx < 22:  # simulator_model.param.yaml
+                    self.yaml_data_2['/**']['ros__parameters'][key] = value
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/simulator_model.param.yaml', self.yaml_data_2)
-                else:
+                else:  # vehicle_info.param.yaml
+                    self.yaml_data_3['/**']['ros__parameters'][key] = value
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/vehicle_info.param.yaml', self.yaml_data_3)
 
+    def save_yaml(self, file_path, data):
+        """保存 YAML 数据到文件"""
+        try:
+            with open(file_path, 'w') as file:
+                yaml = ruamel.yaml.YAML()
+                yaml.dump(data, file)
+                print(f"YAML data saved to {file_path}")
+        except Exception as e:
+            print(f"Error saving YAML file {file_path}: {e}")
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = MainWindow()  # 启动主界面
-    window.show()
+    main_window = MainWindow()
+    main_window.show()
     sys.exit(app.exec_())
