@@ -122,21 +122,13 @@ class VehicleModeWindow(QMainWindow):
         sender = self.sender()
         text = sender.toPlainText()
 
-        # 不加双引号的特定键
-        no_quotes_keys = {
-            'min_longitudinal_offset', 'max_longitudinal_offset', 'x_stddev', 'right_overhang',
-            'min_lateral_offset', 'max_lateral_offset', 'min_height_offset', 'max_height_offset',
-            'simulated_frame_id', 'origin_frame_id', 'vehicle_model_type', 'initialize_source',
-            'timer_sampling_time_ms', 'add_measurement_noise', 'vel_lim', 'vel_rate_lim',
-            'steer_lim', 'steer_rate_lim', 'acc_time_delay', 'acc_time_constant', 'steer_time_delay',
-            'steer_time_constant', 'wheel_radius', 'wheel_width', 'wheel_base', 'wheel_tread',
-            'front_overhang', 'vehicle_height', 'rear_overhang', 'left_overhang', 'right_overhang',
-            'max_steer_angle'
+        # 特定键需要双引号
+        quote_keys = {
+            "base_link", "map", "DELAY_STEER_ACC_GEARED", "INITIAL_POSE_TOPIC", "IDEAL_STEER_VEL",
+            "IDEAL_STEER_ACC", "IDEAL_STEER_ACC_GEARED", "DELAY_STEER_ACC", "ORIGIN",
         }
 
-        # 特定键需要双引号
-        quote_keys = {"map", "DELAY_STEER_ACC_GEARED", "INITIAL_POSE_TOPIC"}
-
+        # 控件与 YAML 键值的映射关系
         mapping = [
             ('min_longitudinal_offset', 0), ('max_longitudinal_offset', 1), ('min_lateral_offset', 2),
             ('max_lateral_offset', 3), ('min_height_offset', 4), ('max_height_offset', 5),
@@ -158,12 +150,12 @@ class VehicleModeWindow(QMainWindow):
             if sender == self.textEdits[idx]:
                 print(f"Updating {key} with new value: {text}")
                 # 处理值并确保添加双引号或不添加
-                if key in no_quotes_keys:
+                if key in quote_keys:  # 如果是需要双引号的键
+                    value = f'"{text}"'  # 添加双引号
+                elif text.replace(".", "", 1).isdigit():  # 数字类型的值
                     value = float(text)  # 不加双引号的键使用数值类型
-                elif key in quote_keys or (text not in ["true", "false"]):
-                    value = f'"{text}"'  # 对于需要双引号的键或文本为其他字符串，添加双引号
                 else:
-                    value = text  # 如果是布尔值等，直接保存
+                    value = text  # 其余直接作为字符串
 
                 # 更新对应的 YAML 文件中的值
                 if idx < 6:  # mirror.param.yaml
