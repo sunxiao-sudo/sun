@@ -134,6 +134,9 @@ class VehicleModeWindow(QMainWindow):
             'max_steer_angle'
         }
 
+        # 特定键需要双引号
+        quote_keys = {"map", "DELAY_STEER_ACC_GEARED", "INITIAL_POSE_TOPIC"}
+
         mapping = [
             ('min_longitudinal_offset', 0), ('max_longitudinal_offset', 1), ('min_lateral_offset', 2),
             ('max_lateral_offset', 3), ('min_height_offset', 4), ('max_height_offset', 5),
@@ -154,41 +157,22 @@ class VehicleModeWindow(QMainWindow):
         for key, idx in mapping:
             if sender == self.textEdits[idx]:
                 print(f"Updating {key} with new value: {text}")
-
-                # 判断是否是数字或布尔值
-                try:
-                    if text.lower() == 'true':
-                        value = "true"  # 保持为字符串
-                    elif text.lower() == 'false':
-                        value = "false"  # 保持为字符串
-                    elif text.isdigit():  # 处理整数
-                        value = str(int(text))  # 保持为字符串
-                    else:
-                        try:
-                            value = str(float(text))  # 试图将文本转为浮动数值并转为字符串
-                        except ValueError:
-                            if key in no_quotes_keys:  # 如果是指定的不加双引号的键，保存为数字类型
-                                value = float(text)
-                            else:
-                                value = f'"{text}"'  # 不是数字的话，直接作为字符串并加上双引号
-                except Exception as e:
-                    print(f"Error converting text to appropriate type: {e}")
-                    value = f'"{text}"'  # 如果出现错误，直接作为字符串
+                # 处理值并确保添加双引号或不添加
+                if key in no_quotes_keys:
+                    value = float(text)  # 不加双引号的键使用数值类型
+                elif key in quote_keys or (text not in ["true", "false"]):
+                    value = f'"{text}"'  # 对于需要双引号的键或文本为其他字符串，添加双引号
+                else:
+                    value = text  # 如果是布尔值等，直接保存
 
                 # 更新对应的 YAML 文件中的值
                 if idx < 6:  # mirror.param.yaml
-                    if isinstance(value, str) and value not in ["true", "false"] and key not in no_quotes_keys:
-                        value = f'"{value}"'  # 如果是字符串且不在 no_quotes_keys 中，添加双引号
                     self.yaml_data_1['/**']['ros__parameters'][key] = value
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/mirror.param.yaml', self.yaml_data_1)
                 elif idx < 22:  # simulator_model.param.yaml
-                    if isinstance(value, str) and value not in ["true", "false"] and key not in no_quotes_keys:
-                        value = f'"{value}"'  # 如果是字符串且不在 no_quotes_keys 中，添加双引号
                     self.yaml_data_2['/**']['ros__parameters'][key] = value
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/simulator_model.param.yaml', self.yaml_data_2)
                 else:  # vehicle_info.param.yaml
-                    if isinstance(value, str) and value not in ["true", "false"] and key not in no_quotes_keys:
-                        value = f'"{value}"'  # 如果是字符串且不在 no_quotes_keys 中，添加双引号
                     self.yaml_data_3['/**']['ros__parameters'][key] = value
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/vehicle_info.param.yaml', self.yaml_data_3)
 
