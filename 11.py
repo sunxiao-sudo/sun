@@ -146,4 +146,24 @@ class VehicleModeWindow(QMainWindow):
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/mirror.param.yaml', self.yaml_data_1)
                 elif idx < 24:  # simulator_model.param.yaml
                     self.yaml_data_2[key] = text
-                    self.save
+                    self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/simulator_model.param.yaml', self.yaml_data_2)
+                else:  # vehicle_info.param.yaml
+                    self.yaml_data_3[key] = text
+                    self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/vehicle_info.param.yaml', self.yaml_data_3)
+
+    def save_yaml(self, file_path, data):
+        """保存 YAML 文件"""
+        print(f"Saving YAML file: {file_path}")
+        try:
+            with open(file_path, 'w') as file:
+                yaml.safe_dump(data, file, default_flow_style=False)  # 确保格式正确
+            print(f"YAML file saved successfully: {file_path}")
+        except Exception as e:
+            print(f"Error saving YAML file {file_path}: {e}")
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()  # 启动主界面
+    window.show()
+    sys.exit(app.exec_())
