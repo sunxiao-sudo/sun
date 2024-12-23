@@ -156,9 +156,9 @@ class VehicleModeWindow(QMainWindow):
         """保存 YAML 文件"""
         print(f"Saving YAML file: {file_path}")
         try:
-            # 使用普通字典来保存
             with open(file_path, 'w') as file:
-                yaml.safe_dump(data, file, default_flow_style=False, allow_unicode=True)
+                # 使用普通字典来保存
+                yaml.safe_dump(data, file, default_flow_style=False, allow_unicode=True, indent=2)
             print(f"YAML file saved successfully: {file_path}")
         except Exception as e:
             print(f"Error saving YAML file {file_path}: {e}")
