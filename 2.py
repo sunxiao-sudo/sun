@@ -74,10 +74,8 @@ class VehicleModeWindow(QMainWindow):
 
         try:
             yaml = ruamel.yaml.YAML()
-            yaml.default_style = None  # 不为默认值加引号
-            yaml.preserve_quotes = True  # 保留原始引号
 
-            # 处理所有键值对
+            # 定义一个函数确保字符串值加双引号
             def representer(dumper, data):
                 if isinstance(data, str):  # 如果值是字符串
                     return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='"')  # 给字符串值加双引号
@@ -85,7 +83,7 @@ class VehicleModeWindow(QMainWindow):
 
             yaml.representer.add_representer(str, representer)
 
-            # 将数据写入文件
+            # 保存数据
             with open(file_path, 'w') as f:
                 yaml.dump(data, f)
             print(f"YAML file saved successfully to {file_path}")
@@ -166,16 +164,13 @@ class VehicleModeWindow(QMainWindow):
             ('max_steer_angle', 31)
         ]
 
-        print(f"Text changed in sender: {sender} with new value: {text}")
-
-        # 确保索引在范围内
         for key, idx in mapping:
             if sender == self.textEdits[idx]:
                 print(f"Updating {key} with new value: {text}")
                 # 更新对应的 YAML 文件中的值
                 if idx < 6:  # mirror.param.yaml
                     self.yaml_data_1['/**']['ros__parameters'][key] = text
-                elif idx < 22:  # simulator_model.param.yaml
+                elif idx < 12:  # simulator_model.param.yaml
                     self.yaml_data_2['/**']['ros__parameters'][key] = text
                 else:  # vehicle_info.param.yaml
                     self.yaml_data_3['/**']['ros__parameters'][key] = text
@@ -183,7 +178,7 @@ class VehicleModeWindow(QMainWindow):
                 # 保存更新后的 YAML 文件
                 if idx < 6:
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/mirror.param.yaml', self.yaml_data_1)
-                elif idx < 22:
+                elif idx < 12:
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/simulator_model.param.yaml', self.yaml_data_2)
                 else:
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/vehicle_info.param.yaml', self.yaml_data_3)
