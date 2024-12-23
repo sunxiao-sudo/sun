@@ -70,10 +70,6 @@ class VehicleModeWindow(QMainWindow):
         yaml_data_2 = self.yaml_data_2.get('/**', {}).get('ros__parameters', {})
         yaml_data_3 = self.yaml_data_3.get('/**', {}).get('ros__parameters', {})
 
-        print(f"YAML data for mirror.param.yaml: {yaml_data_1}")
-        print(f"YAML data for simulator_model.param.yaml: {yaml_data_2}")
-        print(f"YAML data for vehicle_info.param.yaml: {yaml_data_3}")
-
         # 控件和 YAML 键值的映射关系
         mapping = [
             ('min_longitudinal_offset', 0), ('max_longitudinal_offset', 1), ('min_lateral_offset', 2),
@@ -144,13 +140,13 @@ class VehicleModeWindow(QMainWindow):
                 print(f"Updating {key} with new value: {text}")
                 # 更新对应的 YAML 文件中的值
                 if idx < 6:  # mirror.param.yaml
-                    self.yaml_data_1['/**']['ros__parameters'][key] = text  # 保持为字符串类型
+                    self.yaml_data_1['/**']['ros__parameters'][key] = text  # 保持字符串不转换
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/mirror.param.yaml', self.yaml_data_1)
                 elif idx < 22:  # simulator_model.param.yaml
-                    self.yaml_data_2['/**']['ros__parameters'][key] = text  # 保持为字符串类型
+                    self.yaml_data_2['/**']['ros__parameters'][key] = text  # 保持字符串不转换
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/simulator_model.param.yaml', self.yaml_data_2)
                 else:  # vehicle_info.param.yaml
-                    self.yaml_data_3['/**']['ros__parameters'][key] = text  # 保持为字符串类型
+                    self.yaml_data_3['/**']['ros__parameters'][key] = text  # 保持字符串不转换
                     self.save_yaml('/home/nvidia/code/kunyi/src/vehicle/carla_vehicle_launch/carla_vehicle_description/config/vehicle_info.param.yaml', self.yaml_data_3)
 
     def save_yaml(self, file_path, data):
@@ -158,14 +154,13 @@ class VehicleModeWindow(QMainWindow):
         print(f"Saving YAML file: {file_path}")
         try:
             yaml = ruamel.yaml.YAML()
-            yaml.default_style = '"'  # 强制使用双引号来保存字符串
+            yaml.default_style = '"'  # 设置为双引号样式
+            yaml.allow_unicode = True  # 允许unicode字符
             with open(file_path, 'w') as file:
-                # 使用 ruamel.yaml 保存 YAML，保留顺序和注释
-                yaml.dump(data, file)
+                yaml.dump(data, file)  # 使用ruamel.yaml.dump来保存文件
             print(f"YAML file saved successfully: {file_path}")
         except Exception as e:
             print(f"Error saving YAML file {file_path}: {e}")
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
