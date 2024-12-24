@@ -8,9 +8,9 @@ from autoware import Ui_autowareWindow  # 导入主界面的UI类
 
 # 特定键，需要双引号
 quote_keys = {
-    "base_link", "map", "DELAY_STEER_ACC_GEARED", "INITIAL_POSE_TOPIC", 
-    "IDEAL_STEER_VEL", "IDEAL_STEER_ACC", "IDEAL_STEER_ACC_GEARED", 
-    "DELAY_STEER_ACC", "ORIGIN"
+    "base_link", "map", "DEAL_STEER_VEL", "IDEAL_STEER_ACC", 
+    "IDEAL_STEER_ACC_GEARED", "DELAY_STEER_ACC", "DELAY_STEER_ACC_GEARED", 
+    "ORIGIN", "INITIAL_POSE_TOPIC"
 }
 
 class MainWindow(QMainWindow):
@@ -64,11 +64,21 @@ class VehicleModeWindow(QMainWindow):
                 yaml = ruamel.yaml.YAML()
                 # 使用 ruamel.yaml 来加载 YAML，保留顺序和注释
                 data = yaml.load(file)
+
+                # 对特定键（如 base_link, map 等）添加双引号
+                self.add_quotes_to_special_keys(data)
+
                 print(f"Data loaded from {file_path}: {data}")
                 return data
         except Exception as e:
             print(f"Error loading YAML file {file_path}: {e}")
             return {}
+
+    def add_quotes_to_special_keys(self, data):
+        """确保特定的字符串键带双引号"""
+        for key in data.get('/**', {}).get('ros__parameters', {}):
+            if key in quote_keys and isinstance(data['/**']['ros__parameters'][key], str):
+                data['/**']['ros__parameters'][key] = f'"{data["/**"]["ros__parameters"][key]}"'
 
     def fill_text_edits(self):
         """填充 QTextEdit 控件"""
@@ -143,33 +153,18 @@ class VehicleModeWindow(QMainWindow):
             ('max_steer_angle', 31)
         ]
 
-        print(f"Text changed in sender: {sender} with new value: {text}")
-
-        # 确保索引在范围内
         for key, idx in mapping:
             if sender == self.textEdits[idx]:
                 print(f"Updating {key} with new value: {text}")
-                # 判断特定键是否需要加双引号
-                if key in quote_keys:
-                    value = f'"{text}"'  # 添加双引号
-                else:
-                    # 判断布尔值
-                    if text.lower() == 'true':
-                        value = True
-                    elif text.lower() == 'false':
-                        value = False
-                    else:
-                        try:
-                            value = float(text)  # 其他情况下作为数值处理
-                        except ValueError:
-                            value = text  # 保持原字符串
+                # 根据文本内容更新相应的 YAML 数据
+                value = text  # 保持为原文本
 
-                # 更新对应的 YAML 文件中的值
-                if idx < 6:  # mirror.param.yaml
+                # 根据 key 将值更新到相应的数据字典
+                if idx < 12:
                     self.yaml_data_1['/**']['ros__parameters'][key] = value
-                elif idx < 12:  # simulator_model.param.yaml
+                elif idx < 24:
                     self.yaml_data_2['/**']['ros__parameters'][key] = value
-                else:  # vehicle_info.param.yaml
+                else:
                     self.yaml_data_3['/**']['ros__parameters'][key] = value
 
                 # 保存 YAML 数据
@@ -190,6 +185,7 @@ class VehicleModeWindow(QMainWindow):
             print("YAML data saved successfully.")
         except Exception as e:
             print(f"Error saving YAML data: {e}")
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
