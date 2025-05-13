@@ -24,7 +24,7 @@ def latlon_to_xy(lat0, lon0, lat, lon):
 
 def update_robot_state(robot_state):
     x, y, theta = robot_state
-    print(f"机器人状态: x={x:.3f} m, y={y:.3f} m, theta={theta:.2f} deg")
+    print(f"机器人状态: x={x:.3f} m, y={y:.3f} m, theta={theta:.3f} rad")
 
 class LatLonXYThetaPublisher(Node):
     def __init__(self):
@@ -64,9 +64,8 @@ class LatLonXYThetaPublisher(Node):
         siny_cosp = 2 * (q.w * q.z + q.x * q.y)
         cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z)
         yaw = math.atan2(siny_cosp, cosy_cosp)
-        self.theta = math.degrees(yaw)
-        if self.theta < 0:
-            self.theta += 360
+        # 直接取yaw，单位为弧度，范围(−π, π]，以x轴正方向为0，逆时针为正
+        self.theta = yaw
 
     def publish_info(self):
         if self.origin_set and self.lat is not None and self.lon is not None and self.theta is not None:
