@@ -26,7 +26,7 @@ def latlon_to_xy(lat0, lon0, alt0, lat, lon, alt):
     x = dlon * Rn * math.cos(lat0_rad)
     y = dlat * Rm
     z = dalt
-    return x, y
+    return x, y, z
 
 class IntegratedNode(Node):
     def __init__(self):
