@@ -84,6 +84,24 @@ class IntegratedNode(Node):
             x, y = latlon_to_xy(self.lat0, self.lon0, self.lat, self.lon)
             self.get_logger().info(f"机器人状态: x={x:.3f}, y={y:.3f}, theta={self.theta:.3f}")
             self.get_logger().info(f"当前动作: speed={self.action[0, 0]:.2f}, steering={self.action[1, 0]:.2f}")
+            # 机器人状态
+            robot_state = np.array([x, y, self.theta, self.action[0, 0]])  # [x, y, theta, v]
+            # 激光雷达扫描数据
+            lidar_scan = self.lidar_points if self.lidar_points is not None else np.zeros((2, 0))
+            # 目标点（可替换为参考轨迹）
+            goal = np.array([x_goal, y_goal])  # 需提前定义目标点坐标
+            # 标签（监督信号）：当前速度和转向角
+            label = np.array([self.action[0, 0], self.action[1, 0]])  # [v, delta]
+            # 打包成训练输入
+            train_sample = {
+                'robot_state': robot_state,      # 1维向量 [x, y, theta, v]
+                'lidar_scan': lidar_scan,        # 2xN 或 1xN 数组
+                'goal': goal,                    # 1维向量 [x_goal, y_goal]
+                'label': label                   # 1维向量 [v, delta]
+            }
+            # 传递给训练模型或保存
+            # model.train_step(train_sample)
+            print(f"train_sample: {train_sample}")
         else:
             self.get_logger().warn("等待GNSS和IMU初始化...")
 
