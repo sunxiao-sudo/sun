@@ -10,18 +10,22 @@ a = 6378137.0
 b = 6356752.3142
 e2 = 1 - (b*b)/(a*a)
 
-def latlon_to_xy(lat0, lon0, lat, lon):
+def latlon_to_xy(lat0, lon0, alt0, lat, lon, alt):
     lat0_rad = math.radians(lat0)
     lon0_rad = math.radians(lon0)
+    alt0_rad = math.radians(alt0)
     lat_rad = math.radians(lat)
     lon_rad = math.radians(lon)
+    alt_rad = math.radians(alt)
     dlat = lat_rad - lat0_rad
     dlon = lon_rad - lon0_rad
+    dalt = alt_rad - alt0_rad
     sin_lat0 = math.sin(lat0_rad)
     Rn = a / math.sqrt(1 - e2 * sin_lat0 * sin_lat0)
     Rm = a * (1 - e2) / math.pow(1 - e2 * sin_lat0 * sin_lat0, 1.5)
     x = dlon * Rn * math.cos(lat0_rad)
     y = dlat * Rm
+    z = dalt
     return x, y
 
 class IntegratedNode(Node):
@@ -29,10 +33,12 @@ class IntegratedNode(Node):
         super().__init__('integrated_node')
         self.lat = None
         self.lon = None
+        self.alt = None
         self.theta = None
         self.origin_set = False
         self.lat0 = None
         self.lon0 = None
+        self.alt0 = None
         self.lidar_points = None
 
         self.create_subscription(PointCloud2, '/sensing/lidar/top/outlier_filtered/pointcloud', self.pointcloud_callback, 10)
